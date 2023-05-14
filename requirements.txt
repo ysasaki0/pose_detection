@@ -1,4 +1,4 @@
-certifi @ file:///C:/b/abs_85o_6fm0se/croot/certifi_1671487778835/work/certifi
+certifi
 imageio==2.28.1
 imageio-ffmpeg==0.4.8
 mediapipe==0.8.9.1
