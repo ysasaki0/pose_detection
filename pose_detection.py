@@ -26,9 +26,9 @@ speed_factor = st.sidebar.slider("再生速度の調整", min_value=0.25, max_va
 
 if upload_file is not None:
     # tempファイルに保存
-    temp_file = tempfile.NamedTemporaryFile(delete=False) 
-    temp_file.write(upload_file.read())
-    temp_file_path = temp_file.name
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        temp_file.write(upload_file.read())
+        temp_file_path = temp_file.name
 
     with open(temp_file_path, 'rb') as file:
         cap_file = cv2.VideoCapture(temp_file.name)
@@ -41,8 +41,8 @@ if upload_file is not None:
         size = (int((width * 0.5) // macro_block_size) * macro_block_size, int((height * 0.5) // macro_block_size) * macro_block_size)
 
         # 結果を保存するための一時的な動画ファイル
-        temp_video_file = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
-        temp_video_path = temp_video_file.name
+        with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_video_file:
+            temp_video_path = temp_video_file.name
 
         # 動画書き込み用のオブジェクトを作成
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
@@ -75,12 +75,18 @@ if upload_file is not None:
         out.release()
 
     # 一時的に保存された動画ファイルを再エンコード
-    reencoded_video_path = "output.mp4"
-    reencode_video(temp_video_path, reencoded_video_path, speed_factor)
+    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_reencoded_video:
+        reencoded_video_path = temp_reencoded_video.name
+        reencode_video(temp_video_path, reencoded_video_path, speed_factor)
+
 
     #再エンコードされた動画ファイルをストリーミング
     with open(reencoded_video_path, "rb") as f:
         st.video(f.read(), format="video/mp4", start_time=0)
 
+# アプリケーションが終了した後に一時ファイルを削除
+    os.remove(temp_file_path)
+    os.remove(temp_video_path)
+    os.remove(reencoded_video_path)
 
 
